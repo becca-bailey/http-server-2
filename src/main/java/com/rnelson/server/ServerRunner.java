@@ -10,26 +10,25 @@ public class ServerRunner implements Runnable {
         this.serverPort = port;
     }
 
-    private void echo(BufferedReader in, PrintWriter out) throws IOException {
-        System.out.println("Echoing...");
-        String request = in.readLine();
-        System.out.println(request);
-        out.println("Echo: " + request);
-        out.close();
+    private void echo (PrintWriter out, BufferedReader in) throws IOException {
+        String request;
+        while((request = in.readLine()) != null) {
+            out.println("Echo: " + request);
+        }
     }
 
     @Override
     public void run() {
-        try {
+        try (
             ServerSocket serverSocket = new ServerSocket(serverPort);
-            System.out.println("Server is running...");
             Socket clientSocket = serverSocket.accept();
-            System.out.println("Client has connected!");
 
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            this.echo(in, out);
-
+            PrintWriter out =
+                    new PrintWriter(clientSocket.getOutputStream(), true);
+            BufferedReader in =
+                    new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
+        ) {
+            this.echo(out, in);
         } catch (IOException e) {
             e.printStackTrace();
         }
